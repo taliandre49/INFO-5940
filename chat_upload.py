@@ -1,3 +1,4 @@
+import chromadb.api.client
 import streamlit as st
 from openai import OpenAI
 from openai import AzureOpenAI
@@ -16,84 +17,87 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain.schema import Document 
+from langchain.schema import Document
+import chromadb.api
+
+chromadb.api.client.SharedSystemClient.clear_system_cache()
 
 # Load environment variables
-# load_dotenv() 
+# # load_dotenv() 
 
-st.title("📝 File Q&A with OpenAI")
-uploaded_file = st.file_uploader(
-    "Upload an article", 
-    type=("txt", "pdf"),
-    accept_multiple_files=True
-)
+# st.title("📝 File Q&A with OpenAI")
+# uploaded_file = st.file_uploader(
+#     "Upload an article", 
+#     type=("txt", "pdf"),
+#     accept_multiple_files=True
+# )
 
-question = st.chat_input(
-    "Ask something about the article",
-    disabled=not uploaded_file,
-)
+# question = st.chat_input(
+#     "Ask something about the article",
+#     disabled=not uploaded_file,
+# )
 
-# Initialize session state for messages and vectorstore
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "Ask something about the article"}]
+# # Initialize session state for messages and vectorstore
+# if "messages" not in st.session_state:
+#     st.session_state["messages"] = [{"role": "assistant", "content": "Ask something about the article"}]
 
-if "vectorstore" not in st.session_state:
-    st.session_state["vectorstore"] = None
+# if "vectorstore" not in st.session_state:
+#     st.session_state["vectorstore"] = None
 
-# Display chat messages
-for msg in st.session_state.messages:
-    st.chat_message(msg["role"]).write(msg["content"])
+# # Display chat messages
+# for msg in st.session_state.messages:
+#     st.chat_message(msg["role"]).write(msg["content"])
 
-if uploaded_file and st.session_state["vectorstore"] is None:
-    documents = []
+# if uploaded_file and st.session_state["vectorstore"] is None:
+#     documents = []
     
-    # Process each uploaded file
-    for file in uploaded_file:
-        file_content = ""
+#     # Process each uploaded file
+#     for file in uploaded_file:
+#         file_content = ""
         
-        if file.type == "application/pdf":
-            # If file typ pdf, extract text from PDF
-            pdf_reader = PyPDF2.PdfReader(file)
-            for page in pdf_reader.pages:
-                file_content += page.extract_text()
+#         if file.type == "application/pdf":
+#             # If file typ pdf, extract text from PDF
+#             pdf_reader = PyPDF2.PdfReader(file)
+#             for page in pdf_reader.pages:
+#                 file_content += page.extract_text()
                 
-        elif file.type == "text/plain":
-            # For txt files, just read the content
-            file_content = file.read().decode("utf-8")
+#         elif file.type == "text/plain":
+#             # For txt files, just read the content
+#             file_content = file.read().decode("utf-8")
         
-        # Create a single Document object for the whole file with metadata
-        document = Document(
-            page_content=file_content,
-            metadata={"source": file.name} 
-        )
-        #Populate new file for each file uploaded to creat 'database' for RAG
-        documents.append(document)
+#         # Create a single Document object for the whole file with metadata
+#         document = Document(
+#             page_content=file_content,
+#             metadata={"source": file.name} 
+#         )
+#         #Populate new file for each file uploaded to creat 'database' for RAG
+#         documents.append(document)
 
-    # Initialize the RecursiveCharacterTextSplitter
-    chunk_size = 1000  # chunk size
-    chunk_overlap = 100  # chunk overlap
+#     # Initialize the RecursiveCharacterTextSplitter
+#     chunk_size = 1000  # chunk size
+#     chunk_overlap = 100  # chunk overlap
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap
-    )
+#     text_splitter = RecursiveCharacterTextSplitter(
+#         chunk_size=chunk_size,
+#         chunk_overlap=chunk_overlap
+#     )
 
-    # Split the documents into chunks
-    chunks = text_splitter.split_documents(documents)
+#     # Split the documents into chunks
+#     chunks = text_splitter.split_documents(documents)
 
-    # Initialize Chroma vector store and store it in session_state
-    st.session_state["vectorstore"] = Chroma.from_documents(
-        documents=documents, 
-        embedding=AzureOpenAIEmbeddings(model="text-embedding-3-large")
-    )
+#     # Initialize Chroma vector store and store it in session_state
+#     st.session_state["vectorstore"] = Chroma.from_documents(
+#         documents=documents, 
+#         embedding=AzureOpenAIEmbeddings(model="text-embedding-3-large")
+#     )
 
 
-# Retrieve the initialized vector store from session_state
-vectorstore = st.session_state["vectorstore"]
+# # Retrieve the initialized vector store from session_state
+# vectorstore = st.session_state["vectorstore"]
 
-# Set up the retriever
-if vectorstore:
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 1})
+# # Set up the retriever
+# if vectorstore:
+#     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 1})
 
 # Set up Azure OpenAI client
 client = AzureOpenAI(
@@ -113,15 +117,131 @@ llm = AzureChatOpenAI(
     max_retries=2,
 )
 
-# If a question is asked, process the question
-if question and vectorstore:
+# # If a question is asked, process the question
+# if question and vectorstore:
+#     st.session_state.messages.append({"role": "user", "content": question})
+#     st.chat_message("user").write(question)
+
+#     # Retrieve relevant documents based on the question
+#     retrieved_docs = retriever.invoke(question)
+    
+#     # Format the retrieved documents
+#     def format_docs(docs):
+#         return "\n\n".join(doc.page_content for doc in docs)
+
+#     formatted_docs = format_docs(retrieved_docs)
+    
+#     # Define the prompt template for the LLM
+#     template = """
+#         You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. 
+#         If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
+        
+#         Question: {question} 
+        
+#         Context: {context} 
+        
+#         Answer:
+#     """
+#     prompt = PromptTemplate.from_template(template)
+
+#     # Set up the retrieval-augmented generation (RAG) chain
+#     rag_chain = (
+#         {"context": retriever | format_docs, "question": RunnablePassthrough()}
+#         | prompt
+#         | llm
+#         | StrOutputParser()
+#     )
+
+#     # Invoke the chain to get the answer
+#     ress = rag_chain.invoke(question)
+
+#     # Display the assistant's response
+#     with st.chat_message("assistant"):
+#         st.write(ress)
+
+#     # Append the assistant's response to the messages
+#     st.session_state.messages.append({"role": "assistant", "content": ress})
+# # 
+
+# # add libraries to the pyproject.toml
+
+st.title("📝 File Q&A with OpenAI")
+
+# File uploader
+uploaded_file = st.file_uploader(
+    "Upload an article", 
+    type=("txt", "pdf"),
+    accept_multiple_files=True
+)
+
+# Initialize session state for messages and vectorstore
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant", "content": "Ask something about the article"}]
+
+if "vectorstore" not in st.session_state:
+    st.session_state["vectorstore"] = None
+
+# Chunking process right after file upload
+if uploaded_file and st.session_state["vectorstore"] is None:
+    documents = []
+    
+    # Process each uploaded file
+    for file in uploaded_file:
+        file_content = ""
+        
+        if file.type == "application/pdf":
+            pdf_reader = PyPDF2.PdfReader(file)
+            for page in pdf_reader.pages:
+                file_content += page.extract_text()
+                
+        elif file.type == "text/plain":
+            file_content = file.read().decode("utf-8")
+        
+        # Create a Document object for each file
+        document = Document(
+            page_content=file_content,
+            metadata={"source": file.name}
+        )
+        documents.append(document)
+
+    # Chunk the uploaded documents
+    chunk_size = 1000
+    chunk_overlap = 100
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
+    chunks = text_splitter.split_documents(documents)
+
+    # Store the chunks in a vector store using Chroma
+    st.session_state["vectorstore"] = Chroma.from_documents(
+        documents=chunks,  # Use chunks instead of original documents
+        embedding=AzureOpenAIEmbeddings(model="text-embedding-3-large")
+    )
+
+# Display chat messages
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
+
+# User can now ask questions
+question = st.chat_input(
+    "Ask something about the article",
+    disabled=not uploaded_file,
+)
+
+# Retrieve the initialized vector store
+vectorstore = st.session_state["vectorstore"]
+
+if vectorstore and question:
+    # Append user question to session state
     st.session_state.messages.append({"role": "user", "content": question})
     st.chat_message("user").write(question)
 
-    # Retrieve relevant documents based on the question
+    # Set up the retriever and retrieve relevant documents
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 1})
     retrieved_docs = retriever.invoke(question)
     
-    # Format the retrieved documents
+    # Function to format retrieved documents
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
@@ -140,7 +260,7 @@ if question and vectorstore:
     """
     prompt = PromptTemplate.from_template(template)
 
-    # Set up the retrieval-augmented generation (RAG) chain
+    # RAG chain setup
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
@@ -148,15 +268,11 @@ if question and vectorstore:
         | StrOutputParser()
     )
 
-    # Invoke the chain to get the answer
-    ress = rag_chain.invoke(question)
+    # Get answer from the RAG chain
+    response = rag_chain.invoke(question)
 
-    # Display the assistant's response
+    # Display the assistant's response and append to messages
     with st.chat_message("assistant"):
-        st.write(ress)
+        st.write(response)
 
-    # Append the assistant's response to the messages
-    st.session_state.messages.append({"role": "assistant", "content": ress})
-# 
-
-# add libraries to the pyproject.toml
+    st.session_state.messages.append({"role": "assistant", "content": response})
