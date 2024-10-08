@@ -14,8 +14,12 @@ for msg in st.session_state.messages:
 
 if prompt := st.chat_input():
 
-    client = OpenAI(api_key=environ['OPENAI_API_KEY'])
-
+    client = AzureOpenAI(
+        api_key=environ['AZURE_OPENAI_API_KEY'],
+        api_version="2023-03-15-preview",
+        azure_endpoint=environ['AZURE_OPENAI_ENDPOINT'],
+        azure_deployment=environ['AZURE_OPENAI_MODEL_DEPLOYMENT']
+        )
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
