@@ -22,10 +22,56 @@ import chromadb.api
 
 chromadb.api.client.SharedSystemClient.clear_system_cache()
 
+
+"""
+*** STATIC VARIABLES ***
+These are the clients, LLMS, and apolication titles DO NOT change these following lines of code
+These remain the same despite which version of appliation you want to run
+
+DO NOT TOUCH BELLOW
+"""
+# Set up Azure OpenAI client
+client = AzureOpenAI(
+    api_key=environ['AZURE_OPENAI_API_KEY'],
+    api_version="2023-03-15-preview",
+    azure_endpoint=environ['AZURE_OPENAI_ENDPOINT'],
+    azure_deployment=environ['AZURE_OPENAI_MODEL_DEPLOYMENT'],
+)
+
+# Set up LLM (Azure GPT model)
+llm = AzureChatOpenAI(
+    azure_deployment="gpt-4o",
+    temperature=0.2,
+    api_version="2023-06-01-preview",
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
+st.title("📝 File Q&A with OpenAI")
+
+
+"""
+DO NOT TOUCH ABOVE
+"""
+
+
+
+
+"""
+
+***** CHUNKING AFTER PROMPT LOGIC *****
+
+The logic bellow corresponds to the other version of the application where chunking occurs AFTER the user writes a message to the AI
+     - This version may cause a more lag when waiting for a response due to chunking during message quering
+     - However user will not need to initially wait for chunknig to complete before prompting chatbot
+To run this version simply uncomment code bellow and comment out the other code corresponding to the logic for chunking before message.
+        - This can be found when searching for CHUNKING BEFORE PROMPT
+Save file and re run terminal command `streamlit run chat_upload.py`
+
+"""
 # Load environment variables
 # # load_dotenv() 
 
-# st.title("📝 File Q&A with OpenAI")
 # uploaded_file = st.file_uploader(
 #     "Upload an article", 
 #     type=("txt", "pdf"),
@@ -99,23 +145,6 @@ chromadb.api.client.SharedSystemClient.clear_system_cache()
 # if vectorstore:
 #     retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 1})
 
-# Set up Azure OpenAI client
-client = AzureOpenAI(
-    api_key=environ['AZURE_OPENAI_API_KEY'],
-    api_version="2023-03-15-preview",
-    azure_endpoint=environ['AZURE_OPENAI_ENDPOINT'],
-    azure_deployment=environ['AZURE_OPENAI_MODEL_DEPLOYMENT'],
-)
-
-# Set up LLM (Azure GPT model)
-llm = AzureChatOpenAI(
-    azure_deployment="gpt-4o",
-    temperature=0.2,
-    api_version="2023-06-01-preview",
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 
 # # If a question is asked, process the question
 # if question and vectorstore:
@@ -163,10 +192,17 @@ llm = AzureChatOpenAI(
 #     st.session_state.messages.append({"role": "assistant", "content": ress})
 # # 
 
-# # add libraries to the pyproject.toml
 
-st.title("📝 File Q&A with OpenAI")
+"""""
+ ***** CHUNKING BEFROE PROMPT LOGIC ****
 
+    The following code bellow runs the default algorithm logic:
+        - This code chunks, splits, and transforms files before the User message
+        - This may cause lag before you are able to write a message but will reduce lag when waiting for a response
+    To run this code make sure you have the code logic for Chunking after message is commented out and the following lines of logic bellow are uncommented
+        - This can be found when searching for CHUNKING AFTER PROMPT
+    Save file and re run terminal command `streamlit run chat_upload.py`
+"""""
 # File uploader
 uploaded_file = st.file_uploader(
     "Upload an article", 
