@@ -51,8 +51,13 @@ Assignmen One Instructions and Changes
     - click on the bottom left corner of your VS code. Then select "Rebuild Container"
 3. In the docker container please open the terminal and in the terminal run `streamlit run chat_upload.py`
     - this should provide you with a link to the chatbot upload file interface
-    - hit command and click the link in the terminal this will bring you straight to the chatbot application
+    - hit command and click the Local URL link in the terminal this will bring you straight to the chatbot application
 4. Enjoy! Upload files and conversate with the chatbot AI User Interface.
     - please note that my code currently contains two versions and feel free to try both!!
-        1. The default version is chunking 
+        1. The default version is chunking AFTER the prompt
+        2. To switch the version to chunking BEFORE the prompt I have detailed comment instructions in the `chat_upload.py` file follow the steps detailed there!
+            - simply comment out the portion/version you don't want to run and uncomment the version you do want to run
+            - note that the the default version AFTER the prompt is the code currently uncommented
+            - [IMPORTANT!] Make sure to leave the begining code for client, llm, and title as mentioned in the comments. DO NOT ALTER this code!
+5. Have fun! 
 
