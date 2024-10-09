@@ -61,3 +61,13 @@ Assignmen One Instructions and Changes
             - [IMPORTANT!] Make sure to leave the begining code for client, llm, and title as mentioned in the comments. DO NOT ALTER this code!
 5. Have fun! 
 
+
+## Overview:
+
+This application has many features which include a file upload chat interface. The files available for decipher and upload include pdfs and txt files. You can upload your files and ask the AI chatbot questions regarding files uploaded (note you CAN upload multiple files).
+- to upload files click on upload icon and select desired pdf and txt files
+- Interact with chatbot using prompts
+- This application also has various versions to run:
+        1. RAG before use prompt
+        2. RAG after prompt
+        - to run each one use the instructions provided above as well as instructions detailed in the `chat_upload.py file`
